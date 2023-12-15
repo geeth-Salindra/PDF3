@@ -18,6 +18,15 @@ class PDFToVoiceConverterApp:
         self.browse_button = tk.Button(master, text="Browse", command=self.browse_pdf)
         self.browse_button.pack()
 
+        self.voice_label = tk.Label(master, text="Select Voice:")
+        self.voice_label.pack()
+
+        self.voice_options = ["Microsoft Zira", "Microsoft David", "Microsoft Mark"]
+        self.selected_voice = tk.StringVar(value=self.voice_options[0])
+
+        self.voice_dropdown = ttk.Combobox(master, textvariable=self.selected_voice, values=self.voice_options)
+        self.voice_dropdown.pack()
+
         self.progress_label = tk.Label(master, text="")
         self.progress_label.pack()
 
@@ -35,6 +44,7 @@ class PDFToVoiceConverterApp:
     def convert_pdf_to_voice(self):
         pdf_path = self.pdf_path_entry.get()
         output_file_path = "output.mp3"
+        selected_voice = self.selected_voice.get()
 
         if not pdf_path:
             messagebox.showerror("Error", "Please select a PDF file.")
@@ -44,17 +54,17 @@ class PDFToVoiceConverterApp:
             self.progress_label.config(text="Converting...")
             self.progress_bar.start()
 
-            self.convert_pdf(pdf_path, output_file_path)
+            self.convert_pdf(pdf_path, output_file_path, selected_voice)
 
         except Exception as e:
             self.progress_label.config(text="")
             self.progress_bar.stop()
             messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
-    def convert_pdf(self, pdf_path, output_file_path):
+    def convert_pdf(self, pdf_path, output_file_path, selected_voice):
         try:
             text = pdf_to_text(pdf_path)
-            text_to_speech_local(text, output_file_path)
+            text_to_speech_local(text, output_file_path, selected_voice)
 
             self.progress_label.config(text="Conversion Complete")
             self.progress_bar.stop()
@@ -73,13 +83,13 @@ def pdf_to_text(pdf_path):
             text += page.get_text()
         return text
 
-def text_to_speech_local(text, output_path):
+def text_to_speech_local(text, output_path, selected_voice):
     engine = pyttsx3.init()
 
-    # Set voice to Microsoft Zira
+    # Set voice based on user selection
     voices = engine.getProperty('voices')
     for voice in voices:
-        if "zira" in voice.name.lower():
+        if selected_voice.lower() in voice.name.lower():
             engine.setProperty('voice', voice.id)
             break
 
